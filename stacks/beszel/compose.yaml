@@ -2,8 +2,9 @@
 #
 # Host:     raspi1 (192.168.1.57), deployed through CasaOS (BigBearCasaOS app store)
 # Web UI:   http://192.168.1.57:8090
-# Agents:   TrueNAS (192.168.1.226) reports CPU, RAM, disk, network and temperatures
-#           to this hub, so "is the NAS even up?" is answered from one place.
+# Agents:   Beszel agent 0.21.2 on both raspi (host install) and TrueNAS report CPU,
+#           RAM, disk, load, network, temperatures and uptime to this hub, so "is the
+#           NAS even up?" is answered from one place.
 name: big-bear-beszel
 
 services:

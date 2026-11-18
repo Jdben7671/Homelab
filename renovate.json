@@ -4,9 +4,6 @@
   "timezone": "Europe/Budapest",
   "schedule": ["before 6am on saturday"],
   "labels": ["dependencies"],
-  "docker-compose": {
-    "fileMatch": ["(^|/)compose\\.ya?ml$"]
-  },
   "packageRules": [
     {
       "description": "Major upgrades of stateful services need a manual migration (see runbooks/update-a-service.md)",

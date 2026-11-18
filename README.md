@@ -12,6 +12,11 @@ A two-node self-hosted environment that runs my home's DNS, file sync, smart hom
 
 > **Why this repo exists:** the interesting part of running infrastructure is keeping it running. This repo documents the lab as it is *actually deployed* (exported from the live host and sanitized), the outages I debugged, and what I changed afterwards.
 
+<p align="center">
+  <img src="docs/images/dashboard-homarr.png" alt="Homarr dashboard: service tiles, live host stats for raspi and truenas, Pi-hole stats and Dozzle logs from both hosts" width="100%">
+  <br><sub>Homarr dashboard: service health, live stats for both hosts, Pi-hole blocking stats, and Dozzle log streams from the Pi and the NAS</sub>
+</p>
+
 ---
 
 ## At a glance
@@ -66,13 +71,18 @@ The detailed diagram, boot-order dependencies and design principles are in **[do
 | **Nextcloud** | Self-hosted files, photos, calendar (Postgres 14 + Redis 6.2, data on TrueNAS via NFS) | 35.0.1 | 7580 | [`stacks/nextcloud`](stacks/nextcloud/compose.yaml) |
 | **Home Assistant** | Smart home hub: Philips Hue, Alexa, Apple TV | 2026.11.0 | 8123 | [`stacks/homeassistant`](stacks/homeassistant/compose.yaml) |
 | **Homarr** | Dashboard: service status + TrueNAS pool health | latest | 7575 | [`stacks/homarr`](stacks/homarr/compose.yaml) |
-| **Beszel** | Host and container metrics with history and alerts (hub + TrueNAS agent) | 0.21.0 | 8090 | [`stacks/beszel`](stacks/beszel/compose.yaml) |
+| **Beszel** | Host and container metrics with history and alerts (hub + agents on both hosts) | 0.21.0 | 8090 | [`stacks/beszel`](stacks/beszel/compose.yaml) |
 | **Dozzle** | Live container logs for both hosts (remote agent on TrueNAS) | 11.4.3 | 8888 | [`stacks/dozzle`](stacks/dozzle/compose.yaml) |
 | **Compose Toolbox** | Web editor/validator for compose files | latest | 3002 | [`stacks/composetoolbox`](stacks/composetoolbox/compose.yaml) |
 | **Tailscale** | Zero-trust remote access (installed on the host) | n/a | n/a | [ADR-0003](docs/adr/0003-tailscale-for-remote-access.md) |
 | ~~n8n~~, ~~Nginx Proxy Manager~~ | Retired | | | [`stacks/_retired`](stacks/_retired/) |
 
 The full port map and DNS design are in [docs/networking.md](docs/networking.md).
+
+<p align="center">
+  <img src="docs/images/monitoring-beszel.png" alt="Beszel overview of raspi and truenas: CPU, memory, disk, load, temperature, uptime" width="85%">
+  <br><sub>Beszel: both hosts reporting CPU, memory, disk, load, temperature and uptime</sub>
+</p>
 
 ## Engineering highlights
 

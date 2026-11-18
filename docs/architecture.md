@@ -11,6 +11,7 @@ flowchart LR
 
     subgraph PI["raspi1 · Raspberry Pi 5 · Debian 13 + CasaOS · 192.168.1.57"]
       ts["Tailscale (host service)"]
+      bagent["Beszel agent (host service)"]
       pihole["Pi-hole :53 / :8080"]
       homarr["Homarr :7575"]
       nc["Nextcloud 35 :7580"]
@@ -42,6 +43,7 @@ flowchart LR
   ha --> atv
   ha --> alexa
   beszel -. "metrics" .-> agents
+  beszel -. "metrics" .-> bagent
   dozzle -. "logs" .-> agents
   homarr -. "status + pool health" .-> NAS
 ```

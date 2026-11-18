@@ -5,9 +5,15 @@ Three tools, each answering a different question:
 | Question | Tool | Where |
 |---|---|---|
 | *Is every service up right now?* | **Homarr** board with status tiles for each app, plus the TrueNAS integration showing pool state | `:7575/boards/homelab` |
-| *Is the hardware OK? CPU, RAM, disk, temperatures, history?* | **Beszel** hub on the Pi, agent on TrueNAS | `:8090` |
+| *Is the hardware OK? CPU, RAM, disk, temperatures, history?* | **Beszel** hub on the Pi, agents (0.21.2) on both the Pi and TrueNAS | `:8090` |
 | *What is a container actually saying?* | **Dozzle** shows live logs for the Pi's containers and the NAS's containers (remote agent) | `:8888` |
 | *Is it healthy from a client's point of view?* | [`scripts/healthcheck.sh`](../scripts/healthcheck.sh) does HTTP and DNS checks for every service, with a non-zero exit code on failure | CLI |
+
+![Homarr dashboard](images/dashboard-homarr.png)
+
+![Beszel overview](images/monitoring-beszel.png)
+
+A typical day, as captured above: the Pi idles at about 2–4 % CPU, 27 % RAM and about 56 °C. Pi-hole answers about 23.6k DNS queries per day against a 77k-domain blocklist and blocks about 2.5 % of them.
 
 ## How it played out in a real incident
 
