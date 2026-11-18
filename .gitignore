@@ -1,0 +1,14 @@
+# Secrets: only .env.example files are committed
+.env
+*.env
+!.env.example
+
+# Raw exports from the Pi (contain secrets)
+export/
+*.tgz
+inspect.json
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

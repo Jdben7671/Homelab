@@ -1,0 +1,29 @@
+# Dozzle: real-time container log viewer for BOTH hosts
+#
+# Host:     raspi1 (192.168.1.57), deployed through CasaOS (custom app)
+# Web UI:   http://192.168.1.57:8888
+# Remote:   a Dozzle agent on TrueNAS (192.168.1.226:7007) streams the NAS's
+#           container logs into the same UI.
+# Hardening: container actions (start/stop/restart) and the web shell are disabled,
+#           so the log viewer cannot be used to control containers.
+name: dozzle
+
+services:
+  dozzle:
+    image: amir20/dozzle:latest   # running v11.4.3; see docs/tech-debt.md
+    container_name: dozzle
+    hostname: dozzle
+    restart: unless-stopped
+    cpu_shares: 90
+    network_mode: bridge
+    environment:
+      DOZZLE_HOSTNAME: raspi
+      DOZZLE_REMOTE_AGENT: ${DOZZLE_REMOTE_AGENT:-192.168.1.226:7007|TrueNAS}
+      DOZZLE_ENABLE_ACTIONS: "false"
+      DOZZLE_ENABLE_SHELL: "false"
+      DOZZLE_NO_ANALYTICS: "true"
+    ports:
+      - "8888:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${APPDATA_DIR:-/DATA/AppData}/dozzle:/data

@@ -1,0 +1,27 @@
+# Home Assistant: smart-home hub
+#
+# Host:     raspi1 (192.168.1.57), deployed through CasaOS
+# Web UI:   http://192.168.1.57:8123
+# Integrations: Philips Hue (all lights), Amazon Alexa, Apple TV
+#
+# Why host networking + privileged:
+#   Hue, Apple TV and other local integrations are discovered via mDNS/SSDP
+#   multicast, which does not cross a Docker bridge network. Host networking is the
+#   documented way to run HA in a container with working auto-discovery.
+#   `privileged` gives access to USB/Bluetooth radios. See docs/security.md.
+name: homeassistant
+
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable   # running 2026.11.0; see docs/tech-debt.md
+    container_name: homeassistant
+    hostname: homeassistant
+    restart: unless-stopped
+    cpu_shares: 90
+    network_mode: host
+    privileged: true
+    environment:
+      TZ: ${TZ:-Europe/Budapest}
+    volumes:
+      - ${APPDATA_DIR:-/DATA/AppData}/homeassistant/config:/config
+      - /etc/localtime:/etc/localtime

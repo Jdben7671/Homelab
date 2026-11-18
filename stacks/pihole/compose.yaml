@@ -1,0 +1,35 @@
+# Pi-hole: network-wide DNS sinkhole / ad blocking
+#
+# Host:     raspi1 (192.168.1.57), deployed through CasaOS (BigBearCasaOS app store)
+# Web UI:   http://192.168.1.57:8080/admin
+# DNS:      192.168.1.57:53 (tcp+udp), see docs/networking.md.
+name: big-bear-pihole
+
+services:
+  app:
+    image: pihole/pihole:2026.07.2@sha256:f7d1be836e3bc608b56d82fc9904f5a831cdfbc0dc9c6d58f94e4c985c70038b
+    container_name: pihole
+    hostname: pihole
+    restart: unless-stopped
+    cpu_shares: 90
+    environment:
+      TZ: ${TZ:-Europe/Budapest}
+      FTLCONF_webserver_api_password: ${PIHOLE_WEB_PASSWORD:?set in .env}
+      # Disable per-client rate limiting (default 1000 queries / 60 s).
+      # Without this, high-volume clients get REFUSED answers.
+      RATE_LIMIT: "0/0"
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "8080:80/tcp"      # web UI
+      - "10443:443/tcp"    # web UI (TLS)
+      # 67/udp (DHCP) is published on the live host but unused, see docs/tech-debt.md
+    volumes:
+      - ${APPDATA_DIR:-/DATA/AppData}/big-bear-pihole/etc:/etc/pihole
+      - ${APPDATA_DIR:-/DATA/AppData}/big-bear-pihole/dnsmasq.d:/etc/dnsmasq.d
+    networks: [pihole-network]
+
+networks:
+  pihole-network:
+    name: big-bear-pihole_pihole-network
+    driver: bridge

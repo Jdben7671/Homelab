@@ -1,0 +1,19 @@
+# Beszel hub: lightweight host + container monitoring with history and alerts
+#
+# Host:     raspi1 (192.168.1.57), deployed through CasaOS (BigBearCasaOS app store)
+# Web UI:   http://192.168.1.57:8090
+# Agents:   TrueNAS (192.168.1.226) reports CPU, RAM, disk, network and temperatures
+#           to this hub, so "is the NAS even up?" is answered from one place.
+name: big-bear-beszel
+
+services:
+  big-bear-beszel:
+    image: henrygd/beszel:0.21.0@sha256:6b39a8b64f9b15d00a25e7683e31a93c46161182a54f62713525107064e10599
+    container_name: big-bear-beszel
+    hostname: big-bear-beszel
+    restart: unless-stopped
+    cpu_shares: 90
+    ports:
+      - "8090:8090"
+    volumes:
+      - ${APPDATA_DIR:-/DATA/AppData}/big-bear-beszel/data:/beszel_data

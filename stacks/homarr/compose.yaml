@@ -1,0 +1,27 @@
+# Homarr: homelab dashboard (single pane of glass)
+#
+# Host:     raspi1 (192.168.1.57), deployed through CasaOS (custom app)
+# Web UI:   http://192.168.1.57:7575/boards/homelab
+# Tiles:    service status for every app, plus TrueNAS pool health via the TrueNAS
+#           integration. A red Nextcloud tile was the first signal in INC-001.
+name: homarr
+
+services:
+  homarr:
+    image: ghcr.io/homarr-labs/homarr:latest   # see docs/tech-debt.md (pin a version)
+    container_name: homarr
+    hostname: homarr
+    restart: unless-stopped
+    cpu_shares: 90
+    environment:
+      # 64-char hex key used to encrypt integration credentials stored by Homarr.
+      # Generate with: openssl rand -hex 32
+      SECRET_ENCRYPTION_KEY: ${HOMARR_SECRET_ENCRYPTION_KEY:?set in .env}
+    ports:
+      - "7575:7575"
+    volumes:
+      # NOTE: lives under /data/appdata on the live host, not /DATA/AppData like the
+      # other apps (see docs/tech-debt.md).
+      - ${HOMARR_DATA_DIR:-/data/appdata/homarr}/appdata:/appdata
+      # Read-only would be preferable; Homarr uses the socket to show container status.
+      - /var/run/docker.sock:/var/run/docker.sock

@@ -1,0 +1,10 @@
+[Unit]
+Description=Run nextcloud-nfs-guard every 5 minutes (and shortly after boot)
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Unit=nextcloud-nfs-guard.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,23 @@
+# RETIRED: Nginx Proxy Manager (stopped; config kept for reference)
+# Was: reverse proxy on :80/:443 with admin UI on :81.
+# Remote access now goes through Tailscale instead (see docs/adr/0003-tailscale-for-remote-access.md).
+name: nginxproxymanager
+
+services:
+  nginxproxymanager:
+    image: jc21/nginx-proxy-manager:2.13.5
+    container_name: nginxproxymanager
+    hostname: nginxproxymanager
+    restart: "no"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "81:81"     # admin UI
+    volumes:
+      - ${APPDATA_DIR:-/DATA/AppData}/nginxproxymanager/data:/data
+      - ${APPDATA_DIR:-/DATA/AppData}/nginxproxymanager/etc/letsencrypt:/etc/letsencrypt
+    networks: [nginxproxymanager]
+
+networks:
+  nginxproxymanager:
+    name: nginxproxymanager

@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  compose:
+    name: Validate compose stacks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: docker compose config
+        run: |
+          set -euo pipefail
+          for f in $(find stacks -name compose.yaml | sort); do
+            d="$(dirname "$f")"
+            echo "::group::$d"
+            docker compose -f "$f" --env-file "$d/.env.example" config --quiet
+            echo "OK"
+            echo "::endgroup::"
+          done
+
+  lint:
+    name: Lint YAML + shell
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: yamllint
+        run: pipx run yamllint --strict .
+      - name: shellcheck
+        run: shellcheck scripts/*.sh
+
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,18 @@
+# RETIRED: n8n workflow automation (stopped; config kept for reference)
+# Was: http://192.168.1.57:5678
+name: n8n
+
+services:
+  n8n:
+    image: n8nio/n8n:1.123.0
+    container_name: n8n
+    restart: "no"
+    network_mode: bridge
+    environment:
+      TZ: ${TZ:-Europe/Budapest}
+      # Required when serving over plain HTTP on the LAN; remove once behind TLS.
+      N8N_SECURE_COOKIE: "false"
+    ports:
+      - "5678:5678"
+    volumes:
+      - ${APPDATA_DIR:-/DATA/AppData}/n8n:/home/node/.n8n

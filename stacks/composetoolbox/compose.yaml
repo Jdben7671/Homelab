@@ -1,0 +1,18 @@
+# Compose Toolbox: web editor/validator for docker-compose files
+#
+# Host:     raspi1 (192.168.1.57), deployed through CasaOS (BigBearCasaOS app store)
+# Web UI:   http://192.168.1.57:3002
+name: big-bear-composetoolbox
+
+services:
+  big-bear-composetoolbox:
+    image: ghcr.io/bluegoosemedia/composetoolbox:latest
+    container_name: big-bear-composetoolbox
+    restart: unless-stopped
+    pull_policy: always
+    environment:
+      NODE_ENV: production
+    ports:
+      - "3002:3000"
+    volumes:
+      - ${APPDATA_DIR:-/DATA/AppData}/big-bear-composetoolbox/data:/app/data

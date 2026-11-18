@@ -1,0 +1,23 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "docker:pinDigests"],
+  "timezone": "Europe/Budapest",
+  "schedule": ["before 6am on saturday"],
+  "labels": ["dependencies"],
+  "docker-compose": {
+    "fileMatch": ["(^|/)compose\\.ya?ml$"]
+  },
+  "packageRules": [
+    {
+      "description": "Major upgrades of stateful services need a manual migration (see runbooks/update-a-service.md)",
+      "matchPackageNames": ["postgres", "redis", "bigbeartechworld/big-bear-nextcloud-with-smbclient"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "Ignore retired stacks",
+      "matchFileNames": ["stacks/_retired/**"],
+      "enabled": false
+    }
+  ]
+}
