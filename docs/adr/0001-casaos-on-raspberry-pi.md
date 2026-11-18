@@ -15,8 +15,8 @@ The lab needs to run around 10 always-on services (DNS, file sync, smart home, d
 
 ## Consequences
 
-- ➕ A few watts, silent, cheap to replace.
-- ➕ One-click installs make experimenting fast (n8n and Nginx Proxy Manager were tried and retired this way).
-- ➖ CasaOS-generated compose files are noisy (UI metadata, memory limits set to total RAM) and use random project names (Homarr's project was `optimistic_kaity`). The cleaned versions in this repo fix that.
-- ➖ CasaOS doesn't stop you from installing two apps on the same port or `container_name` (see TD-5). The port table in [networking.md](../networking.md) is the guard rail.
-- ➖ Single host = single point of failure for DNS. Pi-hole stays dependency-free to limit the blast radius.
+- **Pro:** A few watts, silent, cheap to replace.
+- **Pro:** One-click installs make experimenting fast (n8n and Nginx Proxy Manager were tried and retired this way).
+- **Con:** CasaOS-generated compose files are noisy (UI metadata, memory limits set to total RAM) and use random project names (Homarr's project was `optimistic_kaity`). The cleaned versions in this repo fix that.
+- **Con:** CasaOS doesn't stop you from installing two apps on the same port or `container_name` (see TD-5). The port table in [networking.md](../networking.md) is the guard rail.
+- **Con:** Single host = single point of failure for DNS. Pi-hole stays dependency-free to limit the blast radius.

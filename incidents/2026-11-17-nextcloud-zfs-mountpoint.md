@@ -75,9 +75,9 @@ sudo docker restart nextcloud big-bear-nextcloud-cron-1
 
 | # | Action | Type | Status |
 |---|---|---|---|
-| 1 | Write the runbook with exact commands and *don'ts* | mitigate | ✅ done |
-| 2 | Enable *Start Automatically* on the TrueNAS NFS service | prevent | ✅ done |
-| 3 | `nextcloud-nfs-guard` timer to auto-remount + restart containers | mitigate | 🟡 written ([script](../scripts/nextcloud-nfs-guard.sh)), deploy pending |
-| 4 | Move TrueNAS system dataset off the data pool (TD-1) | prevent | ⬜ open |
-| 5 | Alert (not only dashboard) when `status.php` ≠ 200 | detect | ⬜ open |
-| 6 | Document safe boot order of NAS → Pi | mitigate | ✅ [done](../runbooks/boot-order.md) |
+| 1 | Write the runbook with exact commands and *don'ts* | mitigate | Done |
+| 2 | Enable *Start Automatically* on the TrueNAS NFS service | prevent | Done |
+| 3 | `nextcloud-nfs-guard` timer to auto-remount + restart containers | mitigate | Written ([script](../scripts/nextcloud-nfs-guard.sh)), deploy pending |
+| 4 | Move TrueNAS system dataset off the data pool (TD-1) | prevent | Open |
+| 5 | Alert (not only dashboard) when `status.php` ≠ 200 | detect | Open |
+| 6 | Document safe boot order of NAS → Pi | mitigate | [Done](../runbooks/boot-order.md) |

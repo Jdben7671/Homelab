@@ -54,6 +54,6 @@ sudo docker exec -u 33 nextcloud ls -la /var/www/html/data | head   # .ncdata, a
 
 | # | Action | Type | Status |
 |---|---|---|---|
-| 1 | Add "always restart containers after remount" + uid-33 checks to the runbook | mitigate | ✅ done |
-| 2 | [`nextcloud-nfs-guard.sh`](../scripts/nextcloud-nfs-guard.sh): detect "host sees `.ncdata`, container doesn't" → restart containers. Refuse to restart if the host mount itself is missing | mitigate | 🟡 written, deploy pending |
-| 3 | Considered: systemd `RequiresMountsFor=` on `docker.service`. **Rejected**, because it would stop *all* containers (including Pi-hole DNS) when the NAS is down | design | ✅ decided |
+| 1 | Add "always restart containers after remount" + uid-33 checks to the runbook | mitigate | Done |
+| 2 | [`nextcloud-nfs-guard.sh`](../scripts/nextcloud-nfs-guard.sh): detect "host sees `.ncdata`, container doesn't" → restart containers. Refuse to restart if the host mount itself is missing | mitigate | Written, deploy pending |
+| 3 | Considered: systemd `RequiresMountsFor=` on `docker.service`. **Rejected**, because it would stop *all* containers (including Pi-hole DNS) when the NAS is down | design | Decided |

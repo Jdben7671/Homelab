@@ -12,8 +12,8 @@ Install **Tailscale on the Pi host** (not in a container) and reach services ove
 
 ## Consequences
 
-- ➕ Zero open inbound ports. The attack surface is Tailscale's authenticated WireGuard endpoint, not each web app.
-- ➕ Works behind CGNAT, no dynamic DNS needed.
-- ➕ Running on the host means remote access survives Docker restarts. You can SSH in to fix a broken container stack.
-- ➖ Every client device needs the Tailscale app. Not suitable for sharing a Nextcloud link with someone outside the tailnet (Tailscale Funnel could cover that case).
-- ➖ Services are plain HTTP inside the tunnel. `tailscale cert` can add HTTPS later.
+- **Pro:** Zero open inbound ports. The attack surface is Tailscale's authenticated WireGuard endpoint, not each web app.
+- **Pro:** Works behind CGNAT, no dynamic DNS needed.
+- **Pro:** Running on the host means remote access survives Docker restarts. You can SSH in to fix a broken container stack.
+- **Con:** Every client device needs the Tailscale app. Not suitable for sharing a Nextcloud link with someone outside the tailnet (Tailscale Funnel could cover that case).
+- **Con:** Services are plain HTTP inside the tunnel. `tailscale cert` can add HTTPS later.

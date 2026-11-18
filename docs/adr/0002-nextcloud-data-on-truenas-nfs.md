@@ -14,8 +14,8 @@ Nextcloud's user files grow without bound and are the most valuable data in the 
 
 ## Consequences
 
-- ➕ ZFS checksums, scrubs, snapshots and room to grow (900 GB pool), independent of the Pi.
-- ➕ The Pi can be reinstalled without touching user data.
-- ➖ **A cross-host dependency.** Nextcloud now breaks when the NAS reboots, when the share path changes, or when Docker starts before the mount. All of these happened, see [INC-001](../../incidents/2026-11-17-nextcloud-zfs-mountpoint.md) and [INC-002](../../incidents/2026-11-17-nextcloud-stale-bind-mount.md).
-- ➖ UID mapping matters: files must be owned by uid 33 (`www-data`), and root on the Pi is squashed.
+- **Pro:** ZFS checksums, scrubs, snapshots and room to grow (900 GB pool), independent of the Pi.
+- **Pro:** The Pi can be reinstalled without touching user data.
+- **Con:** **A cross-host dependency.** Nextcloud now breaks when the NAS reboots, when the share path changes, or when Docker starts before the mount. All of these happened, see [INC-001](../../incidents/2026-11-17-nextcloud-zfs-mountpoint.md) and [INC-002](../../incidents/2026-11-17-nextcloud-stale-bind-mount.md).
+- **Con:** UID mapping matters: files must be owned by uid 33 (`www-data`), and root on the Pi is squashed.
 - Mitigations: a runbook, the boot-order doc, and [`nextcloud-nfs-guard.sh`](../../scripts/nextcloud-nfs-guard.sh).

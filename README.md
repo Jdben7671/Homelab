@@ -1,4 +1,4 @@
-# 🏠 Homelab
+# Homelab
 
 [![CI](https://github.com/Jdben7671/Homelab/actions/workflows/ci.yml/badge.svg)](https://github.com/Jdben7671/Homelab/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -86,17 +86,17 @@ The full port map and DNS design are in [docs/networking.md](docs/networking.md)
 
 ## Engineering highlights
 
-**🔥 Real incidents, written up properly.** When TrueNAS rebooted, Nextcloud went down with *"data directory is invalid"*. I traced it down through six layers (app → mount → NFS client → NFS server → ZFS) to a pool `mountpoint` that TrueNAS's `altroot` turned into `/mnt/mnt/...`, and fixed it in place without touching the data. → [INC-001](incidents/2026-11-17-nextcloud-zfs-mountpoint.md)
+**Real incidents, written up properly.** When TrueNAS rebooted, Nextcloud went down with *"data directory is invalid"*. I traced it down through six layers (app → mount → NFS client → NFS server → ZFS) to a pool `mountpoint` that TrueNAS's `altroot` turned into `/mnt/mnt/...`, and fixed it in place without touching the data. → [INC-001](incidents/2026-11-17-nextcloud-zfs-mountpoint.md)
 
-**🧩 Understanding the second-order failure.** Even after the storage was fixed, Nextcloud stayed broken. A running container keeps the empty directory it bind-mounted at start, and NFS `root_squash` made `sudo ls` return a misleading *Permission denied*. → [INC-002](incidents/2026-11-17-nextcloud-stale-bind-mount.md)
+**Understanding the second-order failure.** Even after the storage was fixed, Nextcloud stayed broken. A running container keeps the empty directory it bind-mounted at start, and NFS `root_squash` made `sudo ls` return a misleading *Permission denied*. → [INC-002](incidents/2026-11-17-nextcloud-stale-bind-mount.md)
 
-**🛠️ Turning lessons into automation.** [`nextcloud-nfs-guard.sh`](scripts/nextcloud-nfs-guard.sh) + a systemd timer detect *"host sees the data, container doesn't"* and restart only the affected containers. It deliberately refuses to restart onto an empty mount. I considered and rejected making Docker depend on the NFS mount, because that would take DNS down with the NAS.
+**Turning lessons into automation.** [`nextcloud-nfs-guard.sh`](scripts/nextcloud-nfs-guard.sh) + a systemd timer detect *"host sees the data, container doesn't"* and restart only the affected containers. It deliberately refuses to restart onto an empty mount. I considered and rejected making Docker depend on the NFS mount, because that would take DNS down with the NAS.
 
-**🔐 Secrets hygiene.** The live CasaOS configs had passwords inline. Here every secret comes from a git-ignored `.env` (see each stack's `.env.example`), and **gitleaks** runs on every push.
+**Secrets hygiene.** The live CasaOS configs had passwords inline. Here every secret comes from a git-ignored `.env` (see each stack's `.env.example`), and **gitleaks** runs on every push.
 
-**📦 Reproducible, reviewed changes.** Core images are pinned by version *and* `sha256` digest. **Renovate** opens update PRs, major upgrades of stateful services are disabled until migrated by hand, and CI validates every compose file.
+**Reproducible, reviewed changes.** Core images are pinned by version *and* `sha256` digest. **Renovate** opens update PRs, major upgrades of stateful services are disabled until migrated by hand, and CI validates every compose file.
 
-**🔍 Honest about what's not done.** A [tech-debt register](docs/tech-debt.md) and a [security risk list](docs/security.md#known-risks-accepted-for-now-tracked) from auditing the live host against this repo, including a stale duplicate Pi-hole app, an invalid timezone string, and ZFS on USB disks.
+**Honest about what's not done.** A [tech-debt register](docs/tech-debt.md) and a [security risk list](docs/security.md#known-risks-accepted-for-now-tracked) from auditing the live host against this repo, including a stale duplicate Pi-hole app, an invalid timezone string, and ZFS on USB disks.
 
 ## Skills demonstrated
 
