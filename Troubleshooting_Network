@@ -1,0 +1,21 @@
+Home Assistant Alexa Integration Intermittent Disconnections
+
+Overview
+Home Assistant's alexa_devices (aioamazondevices) integration was experiencing periodic disconnections roughly every 30 minutes. Rather than an Amazon authentication or token expiration issue, the root cause was an upstream WAN DHCP lease renewal on the main router briefly interrupting outbound routing.
+Environment
+Host: Raspberry Pi 5 (raspi1) running Home Assistant in Docker (network_mode: host)
+Main Router: TP-Link Archer BE550 (192.168.1.1)
+ISP Gateway: CH7465ONE (192.168.0.1, double-NAT; Bridge Mode unavailable in UI)
+Symptoms
+Home Assistant logs showed OSError 113 (EHOSTUNREACH / No route to host) and OSError 101 (ENETUNREACH / Network unreachable) at ~30-minute intervals
+
+Diagnostics (Ruled Out)
+Physical Link (eth0): dmesg -T | grep -iE "link|eth0|wlan0|carrier|reset" showed zero physical interface drops.
+IPv6 Routing: sudo docker exec homeassistant curl -6 -I [https://api.amazon.com](https://api.amazon.com) returned no AAAA records; curl -4 succeeded.
+Docker Networking: Confirmed homeassistant uses host network mode (docker inspect -f '{{.HostConfig.NetworkMode}}' homeassistant).
+Host OS / DHCP: sudo journalctl -u NetworkManager -u dhcpcd showed no local lease drops or interface resets on raspi1.
+Root Cause
+Checking Advanced > System > System Log on the Archer BE550 revealed DHCPC renewal events matching the exact timestamps of the Home Assistant errors
+
+Fix
+Changing the Archer BE550's IP address from dynamic to static
