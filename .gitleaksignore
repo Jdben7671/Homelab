@@ -1,3 +1,4 @@
 # False positive: an example `kubectl create secret` command in a comment
 # ("--from-literal=encryption-key=$(openssl rand ...)"), not a real key.
 835fbc982a325ec41c9c341dfb868c7be795c321:k8s/secrets.example.yaml:generic-api-key:5
+05a8744856bc466ed7b5e5327b305648c874f378:k8s/secrets.example.yaml:generic-api-key:6
