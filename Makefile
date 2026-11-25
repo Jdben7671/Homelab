@@ -17,7 +17,7 @@ lint:  ## yamllint + shellcheck
 	shellcheck scripts/*.sh
 
 secrets:  ## gitleaks scan of the working tree + history
-	gitleaks detect --source . --verbose
+	gitleaks git . --gitleaks-ignore-path .gitleaksignore --verbose
 
 check: validate k8s lint secrets  ## Everything CI runs
 

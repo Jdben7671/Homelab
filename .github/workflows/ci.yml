@@ -56,7 +56,7 @@ jobs:
       # gitleaks-action, whose commit-range logic breaks on force-pushes.
       - name: gitleaks (full history)
         run: |
-          docker run --rm -v "$PWD:/repo" \
+          docker run --rm -v "$PWD:/repo" -w /repo \
             -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0='*' \
             ghcr.io/gitleaks/gitleaks:v8.24.3 \
-            git /repo --redact --verbose --exit-code 1
+            git /repo --gitleaks-ignore-path /repo/.gitleaksignore --redact --verbose --exit-code 1
