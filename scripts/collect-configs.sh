@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # collect-configs.sh: pull the live CasaOS app definitions + host facts from the Pi
-# so they can be diffed against stacks/ in this repo.
+# so they can be diffed against legacy/casaos-stacks/ in this repo (pre-K3s layout).
 #
 # Run on your workstation:
 #   ./scripts/collect-configs.sh [user@host] [output-dir]

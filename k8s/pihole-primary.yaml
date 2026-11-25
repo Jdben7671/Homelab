@@ -1,0 +1,54 @@
+# Pi-hole primary. raspi1, hostNetwork: DNS :53, web UI :8080 (port 80 is taken by K3s's Traefik/ServiceLB).
+# Two independent resolvers, one per node, so DNS survives losing either Pi.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pihole-primary
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: pihole-primary
+  template:
+    metadata:
+      labels:
+        app: pihole-primary
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: raspi1
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: pihole
+        image: pihole/pihole:2026.07.2
+        env:
+        - name: TZ
+          value: "Europe/Budapest"
+        - name: FTLCONF_webserver_api_password
+          valueFrom:
+            secretKeyRef:
+              name: pihole-secrets
+              key: web-password
+        - name: FTLCONF_webserver_port
+          value: "8080"
+        - name: RATE_LIMIT
+          value: "0/0"
+        - name: FTLCONF_dns_listeningMode
+          value: "all"
+        volumeMounts:
+        - name: etc-pihole
+          mountPath: /etc/pihole
+        - name: etc-dnsmasq
+          mountPath: /etc/dnsmasq.d
+      volumes:
+      - name: etc-pihole
+        hostPath:
+          path: /DATA/AppData/big-bear-pihole/etc
+          type: Directory
+      - name: etc-dnsmasq
+        hostPath:
+          path: /DATA/AppData/big-bear-pihole/dnsmasq.d
+          type: Directory

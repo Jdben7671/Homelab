@@ -1,0 +1,36 @@
+# Beszel monitoring hub. raspi1, hostNetwork :8090. Agents: host service on raspi1, container on TrueNAS.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: beszel
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: beszel
+  template:
+    metadata:
+      labels:
+        app: beszel
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: raspi1
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: beszel
+        image: henrygd/beszel:0.21.0
+        env:
+        - name: TZ
+          value: "Europe/Budapest"
+        volumeMounts:
+        - name: beszel-data
+          mountPath: /beszel_data
+      volumes:
+      - name: beszel-data
+        hostPath:
+          path: /DATA/AppData/big-bear-beszel/data
+          type: Directory

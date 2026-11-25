@@ -1,16 +1,16 @@
 # Runbook: Nextcloud down after TrueNAS restart ("data directory is invalid")
 
-_Confirmed fix, 2026-11-17 ([INC-001](../incidents/2026-11-17-nextcloud-zfs-mountpoint.md), [INC-002](../incidents/2026-11-17-nextcloud-stale-bind-mount.md)). Use this first whenever Nextcloud breaks after TrueNAS reboots._
+_Confirmed fix, 2026-11-17. Updated for K3s on 2026-11-25 ([INC-001](../incidents/2026-11-17-nextcloud-zfs-mountpoint.md), [INC-002](../incidents/2026-11-17-nextcloud-stale-bind-mount.md)). Use this first whenever Nextcloud breaks after TrueNAS reboots._
 
 ## Setup
 | | |
 |---|---|
-| Nextcloud host | Raspberry Pi `raspi1`, CasaOS, 192.168.1.57. Nextcloud 35 on :7580, containers `nextcloud`, `big-bear-nextcloud-cron-1`, `db-nextcloud`, `redis-nextcloud` |
+| Nextcloud host | Raspberry Pi `raspi1`, 192.168.1.57, K3s namespace `nextcloud`. Nextcloud 35 on hostPort :7580, Deployments `nextcloud`, `nextcloud-cron`, `db-nextcloud`, `redis-nextcloud` |
 | Storage | TrueNAS SCALE, 192.168.1.226 (HP EliteDesk G4 mini, internal SSD + 2 external USB HDDs) |
 | ZFS | pool `Nextcloud`, dataset `Nextcloud/Nextcloud` → must mount at `/mnt/Nextcloud/Nextcloud` |
 | NFS | TrueNAS exports `/mnt/Nextcloud/Nextcloud` (NFSv4.2). The Pi mounts it at `/mnt/nextcloud-data` via `/etc/fstab` |
 | Inside the container | data dir = `/var/www/html/data` (bind of `/mnt/nextcloud-data`), files owned by `www-data` (uid 33) |
-| Pi user | not in the docker group, so docker commands need `sudo` |
+| Pi user | `kubectl` is run as `sudo k3s kubectl` |
 
 ## Symptom chain (how it showed up)
 1. Nextcloud (`http://192.168.1.57:7580/status.php`) → HTTP 503: **"Your data directory is invalid. Ensure there is a file called .ncdata…"**
@@ -18,6 +18,8 @@ _Confirmed fix, 2026-11-17 ([INC-001](../incidents/2026-11-17-nextcloud-zfs-moun
 3. `sudo mount -a` → **`mount.nfs: access denied by server while mounting 192.168.1.226:/mnt/Nextcloud/Nextcloud`**
 4. TrueNAS → Datasets shows the dataset as **not shared**. Saving the NFS share fails with **`[ENOENT] Path /mnt/Nextcloud/Nextcloud not found`**, and the path picker can't see it, even though the pool is ONLINE.
 5. After fixing TrueNAS and remounting, Nextcloud still said **"data directory is invalid" + "not writable"**, because the container had been started before the share was mounted (see the last step of the fix).
+
+> The original incident happened on Docker/CasaOS. The commands below are the K3s equivalents. The failure mode is the same, because a `hostPath` volume is a bind mount.
 
 ## Root cause
 The ZFS `mountpoint` property of the pool was set to `/mnt/Nextcloud`. TrueNAS imports pools with `altroot=/mnt`, so ZFS prepended `/mnt` twice:
@@ -54,12 +56,13 @@ mount | grep nextcloud-data                               # must show 192.168.1.
 sudo -u '#33' ls -la /mnt/nextcloud-data/.ncdata          # uid 33 = www-data; must list the file
 sudo -u '#33' touch /mnt/nextcloud-data/.writetest && echo WRITABLE && sudo -u '#33' rm /mnt/nextcloud-data/.writetest
 
-# ALWAYS restart the containers after (re)mounting. A running container keeps
+# ALWAYS restart the pods after (re)mounting. A running container keeps
 # seeing the empty local folder it started with, not the newly mounted share.
-sudo docker restart nextcloud big-bear-nextcloud-cron-1
+sudo k3s kubectl -n nextcloud rollout restart deployment/nextcloud deployment/nextcloud-cron
+sudo k3s kubectl -n nextcloud rollout status deployment/nextcloud
 
-# Verify from inside the container
-sudo docker exec -u 33 nextcloud ls -la /var/www/html/data | head    # .ncdata, appdata_*, user folders
+# Verify from inside the pod (as www-data, because of root_squash)
+sudo k3s kubectl -n nextcloud exec deploy/nextcloud -- su -s /bin/sh www-data -c 'ls -la /var/www/html/data | head'
 ```
 Healthy result: `http://192.168.1.57:7580/status.php` returns JSON with `"installed":true,"maintenance":false`.
 

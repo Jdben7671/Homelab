@@ -1,6 +1,6 @@
 # ADR-0001: Docker + CasaOS on a Raspberry Pi as the application host
 
-**Status:** Accepted
+**Status:** Superseded by [ADR-0004](0004-migrate-to-k3s.md) (2026-11-25)
 
 ## Context
 
@@ -11,7 +11,7 @@ The lab needs to run around 10 always-on services (DNS, file sync, smart home, d
 - A **Raspberry Pi 5 (8 GB)** running Debian 13 is the single application host.
 - Every service runs as a **Docker Compose project**.
 - **CasaOS** is the management layer: app store (including the BigBearCasaOS community store), web UI for installs, updates and logs.
-- Compose files are exported from CasaOS, cleaned up, and version-controlled in [`stacks/`](../../stacks). This makes the repo the readable source of truth for what is deployed.
+- Compose files are exported from CasaOS, cleaned up, and version-controlled in [`legacy/casaos-stacks/`](../../legacy/casaos-stacks). This makes the repo the readable source of truth for what is deployed.
 
 ## Consequences
 

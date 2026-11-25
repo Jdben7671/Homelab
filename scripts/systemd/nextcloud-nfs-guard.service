@@ -1,6 +1,6 @@
 [Unit]
-Description=Ensure Nextcloud's NFS data share is mounted and visible inside the container
-After=network-online.target docker.service
+Description=Ensure Nextcloud's NFS data share is mounted and visible inside the Nextcloud pod
+After=network-online.target k3s.service
 Wants=network-online.target
 
 [Service]

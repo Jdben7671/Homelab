@@ -1,0 +1,63 @@
+# Dozzle log viewer in Kubernetes mode. raspi1, hostNetwork :8888.
+# Read-only RBAC: get/list/watch pods, pod logs, nodes, namespaces (+ metrics). No Docker socket.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dozzle
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dozzle-pod-logs
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/log", "nodes", "namespaces"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["pods", "nodes"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dozzle-pod-logs-binding
+subjects:
+- kind: ServiceAccount
+  name: dozzle
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: dozzle-pod-logs
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dozzle
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dozzle
+  template:
+    metadata:
+      labels:
+        app: dozzle
+    spec:
+      serviceAccountName: dozzle
+      nodeSelector:
+        kubernetes.io/hostname: raspi1
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: dozzle
+        image: amir20/dozzle:latest
+        env:
+        - name: DOZZLE_MODE
+          value: "k8s"
+        - name: DOZZLE_ADDR
+          value: ":8888"
+        - name: TZ
+          value: "Europe/Budapest"

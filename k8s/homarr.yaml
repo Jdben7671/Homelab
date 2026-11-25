@@ -1,0 +1,48 @@
+# Homarr dashboard. raspi1, hostNetwork :7575.
+# NOTE: still mounts the host Docker socket from the CasaOS era (see docs/tech-debt.md).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homarr
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: homarr
+  template:
+    metadata:
+      labels:
+        app: homarr
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: raspi1
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: homarr
+        image: ghcr.io/homarr-labs/homarr:latest
+        env:
+        - name: TZ
+          value: "Europe/Budapest"
+        - name: SECRET_ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: homarr-secrets
+              key: encryption-key
+        volumeMounts:
+        - name: appdata
+          mountPath: /appdata
+        - name: docker-sock
+          mountPath: /var/run/docker.sock
+      volumes:
+      - name: appdata
+        hostPath:
+          path: /data/appdata/homarr/appdata
+          type: Directory
+      - name: docker-sock
+        hostPath:
+          path: /var/run/docker.sock
+          type: Socket

@@ -1,6 +1,6 @@
 # ADR-0003: Tailscale for remote access instead of a public reverse proxy
 
-**Status:** Accepted. Supersedes the Nginx Proxy Manager setup (`stacks/_retired/nginx-proxy-manager`).
+**Status:** Accepted. Supersedes the Nginx Proxy Manager setup (`legacy/casaos-stacks/_retired/nginx-proxy-manager`).
 
 ## Context
 

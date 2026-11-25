@@ -1,20 +1,43 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", "docker:pinDigests"],
+  "extends": [
+    "config:recommended",
+    "docker:pinDigests"
+  ],
   "timezone": "Europe/Budapest",
-  "schedule": ["before 6am on saturday"],
-  "labels": ["dependencies"],
+  "schedule": [
+    "before 6am on saturday"
+  ],
+  "labels": [
+    "dependencies"
+  ],
   "packageRules": [
     {
       "description": "Major upgrades of stateful services need a manual migration (see runbooks/update-a-service.md)",
-      "matchPackageNames": ["postgres", "redis", "bigbeartechworld/big-bear-nextcloud-with-smbclient"],
-      "matchUpdateTypes": ["major"],
+      "matchPackageNames": [
+        "postgres",
+        "redis",
+        "bigbeartechworld/big-bear-nextcloud-with-smbclient"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "enabled": false
     },
     {
-      "description": "Ignore retired stacks",
-      "matchFileNames": ["stacks/_retired/**"],
+      "description": "Tag removed upstream (INC-005): nothing to update to, and a lookup would only fail",
+      "matchPackageNames": [
+        "bigbeartechworld/big-bear-nextcloud-with-smbclient"
+      ],
       "enabled": false
     }
-  ]
+  ],
+  "ignorePaths": [
+    "legacy/**"
+  ],
+  "kubernetes": {
+    "managerFilePatterns": [
+      "/^k8s/.+\\.yaml$/"
+    ]
+  }
 }

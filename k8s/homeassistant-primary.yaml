@@ -1,0 +1,51 @@
+# Home Assistant, primary instance. raspi1, hostNetwork :8123.
+# NET_ADMIN + NET_RAW and /run/dbus give BlueZ full access to the on-board Bluetooth (hci0)
+# without running the container privileged.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homeassistant-primary
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: homeassistant-primary
+  template:
+    metadata:
+      labels:
+        app: homeassistant-primary
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: raspi1
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: homeassistant
+        image: ghcr.io/home-assistant/home-assistant:stable
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+            - NET_RAW
+        env:
+        - name: TZ
+          value: "Europe/Budapest"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: dbus
+          mountPath: /run/dbus
+          readOnly: true
+      volumes:
+      - name: config
+        hostPath:
+          path: /DATA/AppData/homeassistant/config
+          type: Directory
+      - name: dbus
+        hostPath:
+          path: /run/dbus
+          type: Directory

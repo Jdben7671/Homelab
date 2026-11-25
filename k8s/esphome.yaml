@@ -1,0 +1,44 @@
+# ESPHome. raspi1, hostNetwork :6052. Privileged for USB serial flashing of ESP32 boards.
+# /dev/ttyUSB0 has no `type: CharDevice` on purpose: the pod must start even with no board plugged in.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: esphome
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: esphome
+  template:
+    metadata:
+      labels:
+        app: esphome
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: raspi1
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: esphome
+        image: esphome/esphome:2026.10
+        securityContext:
+          privileged: true
+        env:
+        - name: TZ
+          value: "Europe/Budapest"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: ttyusb0
+          mountPath: /dev/ttyUSB0
+      volumes:
+      - name: config
+        hostPath:
+          path: /DATA/AppData/esphome/config
+          type: Directory
+      - name: ttyusb0
+        hostPath:
+          path: /dev/ttyUSB0

@@ -1,0 +1,38 @@
+# Home Assistant cold standby. raspi2, hostNetwork :8123.
+# Config in /opt/homeassistant-k3s/config is rsynced from raspi1 every night at 02:00 (root cron on raspi1).
+# Never run this and homeassistant-primary at the same time.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homeassistant-backup
+  namespace: default
+spec:
+  replicas: 0   # COLD STANDBY: scale to 1 only during failover (runbooks/home-assistant-failover.md)
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: homeassistant-backup
+  template:
+    metadata:
+      labels:
+        app: homeassistant-backup
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: raspi2
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: homeassistant
+        image: ghcr.io/home-assistant/home-assistant:stable
+        env:
+        - name: TZ
+          value: "Europe/Budapest"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+      volumes:
+      - name: config
+        hostPath:
+          path: /opt/homeassistant-k3s/config
+          type: Directory

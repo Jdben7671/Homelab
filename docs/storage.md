@@ -4,7 +4,9 @@
 
 | Data | Where | Why |
 |---|---|---|
-| App config + small DBs (`/DATA/AppData/*`) | Pi microSD (117 GB, about 24 % used) | Fast, local, small |
+| App config + small DBs (`/DATA/AppData/*`, K3s `hostPath` volumes) | raspi1 microSD (117 GB, about 24 % used) | Fast, local, small |
+| Home Assistant standby config | raspi2 `/opt/homeassistant-k3s/config` | Nightly rsync from raspi1 |
+| Container images | K3s containerd store on each node | See [INC-005](../incidents/2026-11-25-nextcloud-image-removed-upstream.md): some images exist only here |
 | Nextcloud Postgres (`pgdata`) | Pi microSD | Postgres over NFS is a known source of locking/corruption issues |
 | Nextcloud user files (`data/`) | TrueNAS ZFS → NFS → Pi | Large, needs checksumming and room to grow (900 GB pool) |
 
@@ -36,7 +38,7 @@ Mount options were chosen deliberately:
 - `nofail`: a missing share must never put the Pi into emergency mode.
 - `noatime`: avoids a metadata write on every read over the network.
 
-The trade-off: with `bg,nofail`, Docker can start Nextcloud **before** the share is mounted. The container then bind-mounts the empty local directory and keeps it even after the share arrives ([INC-002](../incidents/2026-11-17-nextcloud-stale-bind-mount.md)). [`scripts/nextcloud-nfs-guard.sh`](../scripts/nextcloud-nfs-guard.sh) closes that gap.
+The trade-off: with `bg,nofail`, K3s (and before it, Docker) can start Nextcloud **before** the share is mounted. The container then bind-mounts the empty local directory and keeps it even after the share arrives ([INC-002](../incidents/2026-11-17-nextcloud-stale-bind-mount.md)). [`scripts/nextcloud-nfs-guard.sh`](../scripts/nextcloud-nfs-guard.sh) closes that gap. On Kubernetes there's also a cleaner fix: set `mountPropagation: HostToContainer` on the `/var/www/html/data` volumeMount, so a mount that appears on the host later also appears inside the running pod.
 
 ### Permissions gotcha: root_squash
 
@@ -59,11 +61,11 @@ journalctl -t nextcloud-nfs-guard -f     # watch it work
 
 ## Backups: current state and plan
 
-Current state: user files are on ZFS, which provides checksumming and self-healing scrubs. There is **no documented off-site copy yet**, and the app config on the Pi's microSD is not backed up. This is the biggest open risk in the lab (see the [roadmap](../README.md#roadmap)).
+Current state: user files are on ZFS, which provides checksumming and self-healing scrubs. Home Assistant's config is **replicated** nightly to raspi2. That saved the day in [INC-004](../incidents/2026-11-25-casaos-uninstall-deleted-ha-config.md), but a mirror with `--delete` is not a versioned backup. There is **no off-site copy yet**, and the rest of the app config on raspi1's microSD isn't backed up. This is the biggest open risk in the lab (see the [roadmap](../README.md#roadmap)).
 
 Target (3-2-1):
 
 1. Periodic ZFS snapshots of `Nextcloud/Nextcloud` (TrueNAS Periodic Snapshot Task) for "oops I deleted it" recovery.
-2. Nightly `tar` of `/DATA/AppData` + `pg_dump` of the Nextcloud DB from the Pi to a dataset on TrueNAS.
+2. Nightly `tar` of `/DATA/AppData` (excluding `.esphome` build caches) + `pg_dump` of the Nextcloud DB from raspi1 to a dataset on TrueNAS, plus `k3s ctr images export` of images that can't be pulled again.
 3. TrueNAS Cloud Sync task (encrypted) of both to an off-site bucket.
 4. A restore test written up as a runbook. A backup that has never been restored doesn't count.

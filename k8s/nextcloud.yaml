@@ -1,0 +1,253 @@
+# Nextcloud stack in its own namespace. All on raspi1.
+# Services are named db-nextcloud / redis-nextcloud = the old Docker hostnames, so config.php works unchanged.
+# User data: /mnt/nextcloud-data is an NFS mount from TrueNAS (docs/storage.md).
+# Image is imagePullPolicy: IfNotPresent because the tag no longer exists upstream (incidents/ INC-005).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nextcloud
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-nextcloud
+  namespace: nextcloud
+spec:
+  selector:
+    app: db-nextcloud
+  ports:
+  - port: 5432
+    targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-nextcloud
+  namespace: nextcloud
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: db-nextcloud
+  template:
+    metadata:
+      labels:
+        app: db-nextcloud
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: raspi1
+      containers:
+      - name: postgres
+        image: postgres:14.2
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-db
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-db
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-db
+              key: POSTGRES_DB
+        - name: TZ
+          value: "Europe/Budapest"
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: pgdata
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: pgdata
+        hostPath:
+          path: /DATA/AppData/big-bear-nextcloud/pgdata
+          type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-nextcloud
+  namespace: nextcloud
+spec:
+  selector:
+    app: redis-nextcloud
+  ports:
+  - port: 6379
+    targetPort: 6379
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-nextcloud
+  namespace: nextcloud
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: redis-nextcloud
+  template:
+    metadata:
+      labels:
+        app: redis-nextcloud
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: raspi1
+      containers:
+      - name: redis
+        image: redis:6.2.20
+        env:
+        - name: TZ
+          value: "Europe/Budapest"
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+      volumes:
+      - name: redis-data
+        hostPath:
+          path: /DATA/AppData/big-bear-nextcloud/redis
+          type: Directory
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud
+  namespace: nextcloud
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nextcloud
+  template:
+    metadata:
+      labels:
+        app: nextcloud
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: raspi1
+      containers:
+      - name: nextcloud
+        image: bigbeartechworld/big-bear-nextcloud-with-smbclient:35.0.1
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: POSTGRES_HOST
+          value: "db-nextcloud"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-db
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-db
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-db
+              key: POSTGRES_DB
+        - name: REDIS_HOST
+          value: "redis-nextcloud"
+        - name: NEXTCLOUD_ADMIN_USER
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-admin
+              key: NEXTCLOUD_ADMIN_USER
+        - name: NEXTCLOUD_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-admin
+              key: NEXTCLOUD_ADMIN_PASSWORD
+        - name: TZ
+          value: "Europe/Budapest"
+        ports:
+        - containerPort: 80
+          hostPort: 7580
+        volumeMounts:
+        - name: html
+          mountPath: /var/www/html
+        - name: data
+          mountPath: /var/www/html/data
+      volumes:
+      - name: html
+        hostPath:
+          path: /DATA/AppData/big-bear-nextcloud/html
+          type: Directory
+      - name: data
+        hostPath:
+          path: /mnt/nextcloud-data
+          type: Directory
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud-cron
+  namespace: nextcloud
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nextcloud-cron
+  template:
+    metadata:
+      labels:
+        app: nextcloud-cron
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: raspi1
+      containers:
+      - name: cron
+        image: bigbeartechworld/big-bear-nextcloud-with-smbclient:35.0.1
+        imagePullPolicy: IfNotPresent
+        command: ["/cron.sh"]
+        env:
+        - name: POSTGRES_HOST
+          value: "db-nextcloud"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-db
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-db
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-db
+              key: POSTGRES_DB
+        - name: REDIS_HOST
+          value: "redis-nextcloud"
+        - name: TZ
+          value: "Europe/Budapest"
+        volumeMounts:
+        - name: html
+          mountPath: /var/www/html
+        - name: data
+          mountPath: /var/www/html/data
+      volumes:
+      - name: html
+        hostPath:
+          path: /DATA/AppData/big-bear-nextcloud/html
+          type: Directory
+      - name: data
+        hostPath:
+          path: /mnt/nextcloud-data
+          type: Directory

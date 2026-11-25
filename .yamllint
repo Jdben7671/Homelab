@@ -8,3 +8,6 @@ rules:
     check-keys: false
   comments:
     min-spaces-from-content: 1
+  indentation:
+    spaces: consistent
+    indent-sequences: whatever   # allow kubectl-style "indentless" lists in k8s/

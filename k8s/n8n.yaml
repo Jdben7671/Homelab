@@ -1,0 +1,38 @@
+# n8n workflow automation. raspi1, hostNetwork :5678.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: n8n
+  template:
+    metadata:
+      labels:
+        app: n8n
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: raspi1
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: n8n
+        image: n8nio/n8n:latest
+        env:
+        - name: TZ
+          value: "Europe/Budapest"
+        - name: N8N_SECURE_COOKIE
+          value: "false"
+        volumeMounts:
+        - name: n8n-data
+          mountPath: /home/node/.n8n
+      volumes:
+      - name: n8n-data
+        hostPath:
+          path: /DATA/AppData/n8n
+          type: Directory
